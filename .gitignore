@@ -1,0 +1,19 @@
+# Dependências (Pesado demais, não enviar)
+node_modules
+/backend/node_modules
+/client/node_modules
+
+# Arquivos de ambiente (Segurança - NUNCA envie)
+.env
+.env.local
+
+# Banco de dados SQLite (se usar no futuro)
+*.db
+*.sqlite
+
+# Arquivos de log e sistema
+npm-debug.log*
+.DS_Store
+Thumbs.db
+dist
+build
