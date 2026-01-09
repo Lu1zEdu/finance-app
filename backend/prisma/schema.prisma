@@ -11,8 +11,16 @@ model Account {
   id           String        @id @default(uuid())
   name         String
   type         String        @default("CHECKING") // CHECKING, CASH, INVESTMENT
-  balance      Decimal       @default(0.0) @db.Decimal(10, 2) // Usar Decimal para dinheiro!
+  balance      Decimal       @default(0.0) @db.Decimal(10, 2)
   transactions Transaction[]
+  createdAt    DateTime      @default(now())
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  name         String        // Ex: "Mercado", "Cliente X"
+  type         String        // INCOME ou EXPENSE
+  transactions Transaction[] // Uma categoria tem várias transações
   createdAt    DateTime      @default(now())
 }
 
@@ -23,13 +31,17 @@ model Transaction {
   type        String   // INCOME, EXPENSE
   date        DateTime
   
-  // Relações
-  account     Account? @relation(fields: [accountId], references: [id])
-  accountId   String?
+  // Relação com Conta (Obrigatória para mover saldo)
+  account     Account @relation(fields: [accountId], references: [id])
+  accountId   String
+
+  // Relação com Categoria (Opcional no início, mas recomendada)
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?
   
   // Campos fiscais
   isTaxable   Boolean  @default(false)
-  taxRate     Decimal? @db.Decimal(5, 4) // Ex: 0.1550
+  taxRate     Decimal? @db.Decimal(5, 4)
   
   createdAt   DateTime @default(now())
 }
