@@ -1,0 +1,1042 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Finance App API",
+        "version": "4.0.0",
+        "description": "ERP Pessoal Completo: Gestão Financeira, Carreira, Orçamentos e Integrações."
+    },
+    "tags": [
+        {
+            "name": "Usuários"
+        },
+        {
+            "name": "Contas"
+        },
+        {
+            "name": "Transações"
+        },
+        {
+            "name": "Orçamentos"
+        },
+        {
+            "name": "Metas"
+        },
+        {
+            "name": "Trabalho"
+        },
+        {
+            "name": "Cenários"
+        },
+        {
+            "name": "Google"
+        },
+        {
+            "name": "Dashboard"
+        }
+    ],
+    "paths": {
+        "/users/register": {
+            "post": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Criar novo usuário",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "birthDate": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-01-01"
+                                    },
+                                    "avatarUrl": {
+                                        "type": "string"
+                                    },
+                                    "freelanceHourlyRate": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado"
+                    }
+                }
+            }
+        },
+        "/users/login": {
+            "post": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Realizar Login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login com sucesso (Token JWT)"
+                    }
+                }
+            }
+        },
+        "/users/profile/{id}": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Obter perfil completo",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados do usuário"
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "put": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Atualizar Perfil e Benefícios",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "birthDate": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "freelanceHourlyRate": {
+                                        "type": "number"
+                                    },
+                                    "cltBenefits": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "amount": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "workExpenses": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Desativar Conta (Soft Delete)",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Conta desativada"
+                    }
+                }
+            }
+        },
+        "/auth/google": {
+            "get": {
+                "tags": [
+                    "Google"
+                ],
+                "summary": "Iniciar Login com Google",
+                "responses": {
+                    "302": {
+                        "description": "Redireciona para o Google"
+                    }
+                }
+            }
+        },
+        "/accounts": {
+            "get": {
+                "tags": [
+                    "Contas"
+                ],
+                "summary": "Listar Contas",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "userId",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "showArchived",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de contas"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Contas"
+                ],
+                "summary": "Criar Conta",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "CHECKING",
+                                            "CASH",
+                                            "INVESTMENT"
+                                        ]
+                                    },
+                                    "userId": {
+                                        "type": "string"
+                                    },
+                                    "balance": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criada"
+                    }
+                }
+            }
+        },
+        "/accounts/{id}": {
+            "put": {
+                "tags": [
+                    "Contas"
+                ],
+                "summary": "Atualizar Conta",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "balance": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizada"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Contas"
+                ],
+                "summary": "Deletar Conta (Permanente)",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deletada"
+                    }
+                }
+            }
+        },
+        "/accounts/{id}/archive": {
+            "patch": {
+                "tags": [
+                    "Contas"
+                ],
+                "summary": "Arquivar Conta (Soft Delete)",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Arquivada"
+                    }
+                }
+            }
+        },
+        "/transactions": {
+            "get": {
+                "tags": [
+                    "Transações"
+                ],
+                "summary": "Listar Transações",
+                "responses": {
+                    "200": {
+                        "description": "Lista"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Transações"
+                ],
+                "summary": "Criar Transação Manual",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "amount": {
+                                        "type": "number"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "accountId": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criada"
+                    }
+                }
+            }
+        },
+        "/transactions/import": {
+            "post": {
+                "tags": [
+                    "Transações"
+                ],
+                "summary": "Importar Extrato Bancário (OFX)",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "userId": {
+                                        "type": "string"
+                                    },
+                                    "accountId": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Importação concluída"
+                    }
+                }
+            }
+        },
+        "/budgets": {
+            "post": {
+                "tags": [
+                    "Orçamentos"
+                ],
+                "summary": "Definir Limite de Gastos",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userId": {
+                                        "type": "string"
+                                    },
+                                    "categoryId": {
+                                        "type": "string"
+                                    },
+                                    "month": {
+                                        "type": "number"
+                                    },
+                                    "year": {
+                                        "type": "number"
+                                    },
+                                    "amount": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Orçamento definido"
+                    }
+                }
+            }
+        },
+        "/budgets/status": {
+            "get": {
+                "tags": [
+                    "Orçamentos"
+                ],
+                "summary": "Relatório de Gastos vs Limites",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "userId",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "month",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "year",
+                        "schema": {
+                            "type": "number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status dos orçamentos"
+                    }
+                }
+            }
+        },
+        "/goals": {
+            "get": {
+                "tags": [
+                    "Metas"
+                ],
+                "summary": "Listar Metas",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "userId",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista com progresso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Metas"
+                ],
+                "summary": "Criar Meta",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "targetAmount": {
+                                        "type": "number"
+                                    },
+                                    "userId": {
+                                        "type": "string"
+                                    },
+                                    "deadline": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criada"
+                    }
+                }
+            }
+        },
+        "/goals/{id}": {
+            "put": {
+                "tags": [
+                    "Metas"
+                ],
+                "summary": "Editar Meta",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "targetAmount": {
+                                        "type": "number"
+                                    },
+                                    "deadline": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Editada"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Metas"
+                ],
+                "summary": "Deletar Meta",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deletada"
+                    }
+                }
+            }
+        },
+        "/goals/{id}/deposit": {
+            "post": {
+                "tags": [
+                    "Metas"
+                ],
+                "summary": "Depositar (Envia email se completar)",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Depositado"
+                    }
+                }
+            }
+        },
+        "/goals/{id}/withdraw": {
+            "post": {
+                "tags": [
+                    "Metas"
+                ],
+                "summary": "Sacar da Meta",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sacado"
+                    }
+                }
+            }
+        },
+        "/work/history": {
+            "get": {
+                "tags": [
+                    "Trabalho"
+                ],
+                "summary": "Listar Histórico Profissional",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "userId",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista completa"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Trabalho"
+                ],
+                "summary": "Adicionar Emprego/Projeto",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userId": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "CLT",
+                                            "FREELANCE"
+                                        ]
+                                    },
+                                    "company": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "startDate": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "salary": {
+                                        "type": "number"
+                                    },
+                                    "taxPaid": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado"
+                    }
+                }
+            }
+        },
+        "/work/history/{id}/leave": {
+            "patch": {
+                "tags": [
+                    "Trabalho"
+                ],
+                "summary": "Registrar Saída (Fim do emprego)",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "endDate": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Saída registrada"
+                    }
+                }
+            }
+        },
+        "/work/freelance-timeline": {
+            "get": {
+                "tags": [
+                    "Trabalho"
+                ],
+                "summary": "Timeline Freelancer (Ganhos vs Impostos)",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "userId",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Timeline calculada"
+                    }
+                }
+            }
+        },
+        "/work/clt": {
+            "post": {
+                "tags": [
+                    "Trabalho"
+                ],
+                "summary": "Simular Salário CLT",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "grossSalary": {
+                                        "type": "number"
+                                    },
+                                    "benefits": {
+                                        "type": "number"
+                                    },
+                                    "monthlyCuts": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cálculo realizado"
+                    }
+                }
+            }
+        },
+        "/work/project": {
+            "post": {
+                "tags": [
+                    "Trabalho"
+                ],
+                "summary": "Calcular Projeto Freelancer",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userId": {
+                                        "type": "string"
+                                    },
+                                    "hoursEstimated": {
+                                        "type": "number"
+                                    },
+                                    "taxRateOverride": {
+                                        "type": "number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Orçamento gerado"
+                    }
+                }
+            }
+        },
+        "/calendar/add": {
+            "post": {
+                "tags": [
+                    "Google"
+                ],
+                "summary": "Adicionar Lembrete ao Google Calendar",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Evento criado"
+                    }
+                }
+            }
+        },
+        "/scenarios": {
+            "post": {
+                "tags": [
+                    "Cenários"
+                ],
+                "summary": "Criar Cenário Futuro",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "userId": {
+                                        "type": "string"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado"
+                    }
+                }
+            }
+        },
+        "/scenarios/activate/{id}": {
+            "post": {
+                "tags": [
+                    "Cenários"
+                ],
+                "summary": "Ativar Cenário",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ativado"
+                    }
+                }
+            }
+        },
+        "/dashboard/summary": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Resumo (Runway + Metas)",
+                "responses": {
+                    "200": {
+                        "description": "Resumo"
+                    }
+                }
+            }
+        }
+    }
+}

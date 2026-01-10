@@ -6,59 +6,53 @@ interface CreateTransactionRequest {
     description: string;
     amount: number;
     type: 'INCOME' | 'EXPENSE';
-    accountId: string;
+    accountId?: string;
+    creditCardId?: string;
     categoryId?: string;
+    necessity?: string;
     isTaxable?: boolean;
     taxRate?: number;
 }
 
 export class CreateTransactionService {
     async execute({
-        description, amount, type, accountId, categoryId, isTaxable, taxRate
+        description, amount, type, accountId, creditCardId, categoryId, necessity, isTaxable, taxRate
     }: CreateTransactionRequest) {
 
-        // 1. Verifica se a conta existe
-        const account = await prisma.account.findUnique({
-            where: { id: accountId }
-        });
+        let finalGrossAmount = null;
+        let finalAmount = amount;
 
-        if (!account) {
-            throw new Error("Conta não encontrada!");
+        if (type === 'INCOME' && isTaxable && taxRate) {
+            finalGrossAmount = amount / (1 - taxRate);
         }
 
-        // 2. Define o valor líquido para o cálculo do saldo
-        // (Se for Despesa, inverte o sinal para subtrair)
-        // Nota: O banco guarda o valor absoluto na transação, mas o saldo da conta sobe ou desce
-
-        // UMA TRANSAÇÃO ATÔMICA (Tudo ou nada)
-        // Se der erro ao atualizar o saldo, ele não cria a transação
         const result = await prisma.$transaction(async (prisma) => {
 
-            // Cria a transação
             const transaction = await prisma.transaction.create({
                 data: {
                     description,
-                    amount,
+                    amount: finalAmount,
                     type,
                     accountId,
+                    creditCardId,
                     categoryId,
+                    necessity: necessity || "Não classificado",
                     isTaxable: isTaxable || false,
                     taxRate: taxRate || 0,
+                    grossAmount: finalGrossAmount || 0,
                     date: new Date(),
                 },
             });
 
-            // Atualiza o saldo da conta
-            const operation = type === 'INCOME' ? 'increment' : 'decrement';
-
-            await prisma.account.update({
-                where: { id: accountId },
-                data: {
-                    balance: {
-                        [operation]: amount
+            if (accountId) {
+                const operation = type === 'INCOME' ? 'increment' : 'decrement';
+                await prisma.account.update({
+                    where: { id: accountId },
+                    data: {
+                        balance: { [operation]: finalAmount }
                     }
-                }
-            });
+                });
+            }
 
             return transaction;
         });

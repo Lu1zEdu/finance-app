@@ -8,27 +8,89 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  password  String    // Senha criptografada
-  avatarUrl String?   // URL da foto de perfil
-  accounts  Account[] // Um usuário tem várias contas (Carteira, Banco, etc)
-  createdAt DateTime  @default(now())
+  id          String       @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String       @unique
+  password    String?
+  googleId    String?
+  avatarUrl   String?
+  
+  isDeleted   Boolean      @default(false)
+  birthDate   DateTime?    
+
+  // Configurações globais opcionais
+  freelanceHourlyRate Decimal? @db.Decimal(10, 2)
+  cltBenefits         Json?    
+  workExpenses        Decimal? @db.Decimal(10, 2)
+
+  accounts    Account[]
+  creditCards CreditCard[]
+  goals       Goal[]
+  scenarios   Scenario[]
+  recurring   RecurringTransaction[]
+  budgets     Budget[]   
+  workHistory WorkHistory[]
+  
+  createdAt   DateTime     @default(now())
+}
+
+// Histórico Profissional (O "LinkedIn" Financeiro)
+model WorkHistory {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  type        String   // "CLT" ou "FREELANCE"
+  role        String   // Ex: "Desenvolvedor Backend"
+  company     String   // Ex: "Google", "Freela Loja X"
+  
+  startDate   DateTime 
+  endDate     DateTime? // Se null, é o emprego atual
+  isCurrent   Boolean  @default(true)
+  
+  salary      Decimal  @db.Decimal(10, 2) // Salário mensal ou Valor do Projeto
+  taxPaid     Decimal? @db.Decimal(10, 2) // Imposto pago (para freelas)
+  
+  createdAt   DateTime @default(now())
 }
 
 model Account {
   id           String        @id @default(uuid())
   name         String
-  type         String        @default("CHECKING")
+  type         String        @default("CHECKING") 
   balance      Decimal       @default(0.0) @db.Decimal(10, 2)
   
-  // Vínculo com Usuário
+  isActive     Boolean       @default(true) // <--- NOVO: Permite arquivar conta antiga sem perder histórico
+  
   user         User          @relation(fields: [userId], references: [id])
   userId       String
-  
   transactions Transaction[]
   createdAt    DateTime      @default(now())
+}
+
+model CreditCard {
+  id           String        @id @default(uuid())
+  bankName     String
+  color        String
+  limit        Decimal       @db.Decimal(10, 2)
+  closingDay   Int
+  dueDay       Int
+  user         User          @relation(fields: [userId], references: [id])
+  userId       String
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+}
+
+model Goal {
+  id           String    @id @default(uuid())
+  name         String
+  targetAmount Decimal   @db.Decimal(10, 2)
+  savedAmount  Decimal   @default(0.0) @db.Decimal(10, 2)
+  deadline     DateTime?
+  user         User      @relation(fields: [userId], references: [id])
+  userId       String
+  createdAt    DateTime  @default(now())
 }
 
 model Category {
@@ -36,6 +98,7 @@ model Category {
   name         String
   type         String        
   transactions Transaction[]
+  budgets      Budget[]      // <--- ADICIONEI ISSO (Correção do erro)
   createdAt    DateTime      @default(now())
 }
 
@@ -45,15 +108,69 @@ model Transaction {
   amount      Decimal  @db.Decimal(10, 2)
   type        String   
   date        DateTime
-  
-  account     Account @relation(fields: [accountId], references: [id])
-  accountId   String
-
+  necessity   String   @default("Essencial")
+  account     Account? @relation(fields: [accountId], references: [id])
+  accountId   String?
+  creditCard  CreditCard? @relation(fields: [creditCardId], references: [id])
+  creditCardId String?
   category    Category? @relation(fields: [categoryId], references: [id])
   categoryId  String?
-  
   isTaxable   Boolean  @default(false)
+  hasInvoice  Boolean  @default(false)
+  invoiceNum  String?
+  grossAmount Decimal? @db.Decimal(10, 2)
   taxRate     Decimal? @db.Decimal(5, 4)
-  
   createdAt   DateTime @default(now())
+}
+
+model Scenario {
+  id          String         @id @default(uuid())
+  title       String
+  description String?
+  isActive    Boolean        @default(false)
+  items       ScenarioItem[]
+  user        User           @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime       @default(now())
+}
+
+model ScenarioItem {
+  id          String   @id @default(uuid())
+  description String
+  amount      Decimal  @db.Decimal(10, 2)
+  type        String   
+  frequency   String   
+  scenario    Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenarioId  String
+}
+
+model RecurringTransaction {
+  id          String   @id @default(uuid())
+  description String
+  amount      Decimal  @db.Decimal(10, 2)
+  type        String   
+  frequency   String   
+  startDate   DateTime
+  nextDueDate DateTime 
+  active      Boolean  @default(true)
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+}
+
+model Budget {
+  id          String   @id @default(uuid())
+  amount      Decimal  @db.Decimal(10, 2) // Limite (Ex: 800.00 para mercado)
+  month       Int      // 1 a 12
+  year        Int      // Ex: 2026
+  
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+
+  createdAt   DateTime @default(now())
+
+  // Garante que só existe 1 orçamento para "Alimentação" em "Janeiro/2026" para este usuário
+  @@unique([userId, categoryId, month, year])
 }
